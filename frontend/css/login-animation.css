@@ -1,0 +1,225 @@
+/* ══════════════════════════════════════════════════════
+   LOGIN PAGE — MASCOTS
+   ══════════════════════════════════════════════════════
+   Char mascots jo login card ke bagal me khade rehte hain: apni-apni chaal se
+   jhoolte hain, palkein jhapakte hain, pointer ko dekhte hain, password
+   dikhne par mooh pher lete hain, Caps Lock par sar tirchha karte hain, aur
+   login ke nateeje par khush ya udaas hote hain.
+
+   Markup index.html me inline SVG hai (img tag me nahi — JS ko andar ke
+   circles chahiye) aur chalane wala code js/login-animation.js me hai.
+
+   Rang: mascots ke teen body colours `--primary` se derive hote hain, isliye
+   har client ki copy me ye apne aap uske apne rang me aa jaate hain. Chautha
+   (charcoal) jaan-boojh kar neutral hai — chaaron ek hi rang ke hote to group
+   flat dikhta.
+   ────────────────────────────────────────────────────── */
+
+/* Split screen: baayein mascots ka ranga hua panel, daayein saaf background
+   par card. Panel poori oonchai lete hain, isliye do saaf hisse dikhte hain —
+   pehle sab kuch beech me tairta tha aur dono taraf khaali maidan bacha
+   rehta tha. */
+.login-shell{
+  display:grid;
+  grid-template-columns:1.16fr .84fr;
+  min-height:100vh;
+  position:relative;
+  z-index:1;
+}
+
+.mascot-panel{
+  position:relative;
+  overflow:hidden;
+  display:grid;
+  place-items:center;
+  padding:clamp(24px,4vw,64px);
+  /* Do parat:
+       1. mascots ke theek peeche ek narm spotlight, taaki wo panel se ubhrein
+       2. upar se neeche gehra hota gradient, jo flat rang se zyada gehrai deta
+     Pehle yahan teen drifting orbs the — poore page par theek the, par panel
+     ke andar wo dhabbon jaise dikhte the.
+     Dono parat --background ke saath mix hoti hain, isliye ek hi rule light
+     aur dark dono me theek baithta hai. */
+  background:
+    radial-gradient(ellipse 60% 46% at 50% 64%,
+      color-mix(in srgb,rgb(var(--brand-rgb)) 30%,var(--background)),
+      transparent 72%),
+    linear-gradient(180deg,
+      color-mix(in srgb,rgb(var(--brand-rgb)) 7%,var(--background)),
+      color-mix(in srgb,rgb(var(--brand-rgb)) 25%,var(--background)));
+}
+
+.form-panel{
+  display:grid;
+  place-items:center;
+  padding:clamp(24px,3vw,48px);
+  background:var(--background);
+}
+
+/* ── Mascots ── */
+.mascots{
+  /* clamp isliye ki bade monitor par ye card se kaafi bada dikhe (wahi to
+     khaali jagah bhar raha hai), par laptop par card ko dhakel na de.
+     820px par SVG ~535px oonchi hoti hai — 1080 screen me aaram se aa jaati
+     hai. */
+  width:clamp(420px,44vw,820px);
+  max-width:100%;
+  height:auto;
+  display:block;
+  animation: mascotsIn .7s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes mascotsIn {
+  from { opacity:0; transform:translateY(26px) scale(.96); }
+  to   { opacity:1; transform:translateY(0)    scale(1);   }
+}
+
+/* Har character apni laya me jhoolta hai, warna poora group ek block ki tarah
+   hilta hua dikhta hai. */
+.mascot{ animation: mascotFloat 4s ease-in-out infinite; transform-origin:center bottom; }
+.mascot--1{ animation-delay:0s;   }
+.mascot--2{ animation-delay:.5s;  }
+.mascot--3{ animation-delay:1s;   }
+.mascot--4{ animation-delay:1.5s; }
+@keyframes mascotFloat {
+  0%,100% { transform:translateY(0);    }
+  50%     { transform:translateY(-9px); }
+}
+
+/* Pupils JS hilata hai; yahan sirf uski chaal smooth ki jaati hai. */
+.pupil{ transition:transform .13s cubic-bezier(.4,0,.2,1); }
+
+/* ── Password screen par dikh raha hai: mascots mooh pher lete hain ──
+   `.is-hiding` SVG par JS lagata hai. Lean ek andar wale .turn group par hai
+   kyunki .mascot ka transform pehle se bob ke paas hai — ek hi transform par
+   do animation ladti hain. */
+.turn{
+  transform-box:fill-box;
+  transform-origin:50% 100%;      /* farsh par pivot, taaki jhukein — khisken nahi */
+  transition:transform .34s cubic-bezier(.34,1.4,.64,1);
+}
+.mascots.is-hiding .mascot--1 .turn{ transform:rotate(-14deg); }
+.mascots.is-hiding .mascot--2 .turn{ transform:rotate(-10deg); }
+.mascots.is-hiding .mascot--3 .turn{ transform:rotate(-17deg); }
+.mascots.is-hiding .mascot--4 .turn{ transform:rotate(-11deg); }
+
+.eye-open,.mouth-happy{ transition:opacity .14s ease; }
+.eye-lid,.mouth-upset{ opacity:0; transition:opacity .14s ease; }
+.mascots.is-hiding .eye-open,
+.mascots.is-hiding .mouth-happy{ opacity:0; }
+.mascots.is-hiding .eye-lid,
+.mascots.is-hiding .mouth-upset{ opacity:1; }
+
+/* Caps Lock — sawaliya sar-tirchha, turn-away se ulti disha me.
+   :not(.is-hiding) isliye ki dikhta hua password hamesha jeete. */
+.mascots.is-alert:not(.is-hiding) .mascot--3 .turn{ transform:rotate(9deg); }
+
+/* Blink. Wahi band-aankh wale arcs, par reveal ki cross-fade se kaafi tez. */
+.mascot.is-blinking .eye-open{ opacity:0; }
+.mascot.is-blinking .eye-lid { opacity:1; }
+.mascot.is-blinking .eye-open,
+.mascot.is-blinking .eye-lid { transition-duration:.07s; }
+
+/* Login reject hua: group sihar jaata hai aur muskaan gir jaati hai */
+.mascots.is-sad{ animation: mascotShake .5s cubic-bezier(.36,.07,.19,.97); }
+.mascots.is-sad .mouth-happy{ opacity:0; }
+.mascots.is-sad .mouth-upset{ opacity:1; }
+@keyframes mascotShake {
+  10%,90%      { transform:translateX(-3px); }
+  20%,80%      { transform:translateX(5px);  }
+  30%,50%,70%  { transform:translateX(-7px); }
+  40%,60%      { transform:translateX(7px);  }
+}
+
+/* Login manzoor: redirect se pehle ek uchhaal */
+.mascots.is-happy .mascot{ animation: mascotJump .5s cubic-bezier(.34,1.56,.64,1); }
+@keyframes mascotJump {
+  0%   { transform:translateY(0);     }
+  40%  { transform:translateY(-26px); }
+  70%  { transform:translateY(0);     }
+  85%  { transform:translateY(-8px);  }
+  100% { transform:translateY(0);     }
+}
+
+/* ── Caps Lock hint ── */
+.caps-hint{
+  display:none;
+  align-items:center;gap:5px;
+  margin-top:6px;
+  font-size:11.5px;font-weight:600;
+  color:var(--accent-foreground);
+}
+.caps-hint.show{ display:flex; }
+
+/* ── Jagah kam ho to ── */
+
+/* Chaudi screen (1081px+) par layout wahi split rehta hai; yahan sirf itna
+   dekhna hai ki bahut nichli window me mascots aur card ki padding fizool
+   jagah na khayein. Dono naap viewport ki OONCHAI (vh) se bandhe hain, aur
+   vh zoom ke saath usi anupaat me badalta hai — isliye ek hi laptop par 90%
+   aur 100% zoom par ye dono bilkul ek jaise physical pixels dete hain. */
+@media (min-width:1081px){
+  /* SVG ka viewBox 420x274 hai (aspect ~1.53), yaani "95vh chaudai" ka matlab
+     "~62vh oonchai" — panel ki padding ke baad bhi aaram se fit, crop kabhi
+     nahi. Ye cap tabhi lagti hai jab window bahut chaudi-aur-nichli ho
+     (aspect ~2.16 se zyada, jaise 1366x620 ya 1920x620). 1920x1080, 1600x900,
+     1440x900, 1366x768 — sab jagah 44vw hi jeetta hai, wahan kuch nahi badla. */
+  .mascots{ width:min(clamp(420px,44vw,820px),95vh); }
+  /* Card panel ki oopar-neeche wali padding bhi vh par. Jab card poora fit
+     hota hai to wo waise bhi beech me hi rehta hai — padding sirf tab mehsoos
+     hoti hai jab jagah kam pade, aur wahan ye scroll thoda ghata deti hai.
+     ~1067px se oonchi screen par 48px hi nikalta hai, yaani koi farak nahi.
+     Horizontal padding jaisa tha waisa hi hai. */
+  .form-panel{ padding:clamp(20px,4.5vh,48px) clamp(24px,3vw,48px); }
+}
+
+/* 1080px se neeche do panel ki jagah nahi bachti — mascots card ke UPAR aa
+   jaate hain (bagal me dabne se behtar), aur bahut chhoti screen par bilkul
+   hat jaate hain (neeche wala block). */
+@media (max-width:1080px){
+  /* Do panel ki jagah nahi bachi — upar-neeche kar do. Mascot panel ko utni
+     hi oonchai do jitni me wo dikh jaye, baaki card ke liye. */
+  .login-shell{ grid-template-columns:1fr; grid-template-rows:auto 1fr; }
+  .mascot-panel{ padding:28px 20px; }
+  /* 70vh ki teesri cap: yahan banner card ke SAR par baithta hai, isliye nichli
+     window me use khud chhota hona chahiye — card ko neeche dhakelne ke bajay.
+     iPad par (768x1024, 820x1180) 520px hi jeetta hai, wahan kuch nahi badla;
+     ye sirf 621-742px oonchi stacked window (jaise 1024x700) me kaam karti hai,
+     kyunki 620px se neeche to banner waise bhi chhup jaata hai. */
+  .mascots{ width:min(520px,88vw,70vh); }
+  .form-panel{ padding:28px 20px 40px; }
+}
+
+/* Mascots chhupane ki shart ab SIRF sankri screen par lagti hai.
+   Pehle yahan akela `(max-height:620px)` tha, har chaudai par. Isi wajah se
+   1366x768 laptop par:
+      100% zoom -> viewport 1366x620 -> mascots gayab, akela card
+       90% zoom -> viewport 1518x689 -> mascots hazir, split screen
+   Ek hi page do bilkul alag design me dikhta tha.
+
+   Wajah samjho: chaudi screen par mascots card ke BAGAL me hote hain — alag
+   COLUMN me. Column chhupane se card ko ek bhi pixel vertical jagah nahi
+   milti (naapa hua hai: 1366x620 par page pehle bhi utna hi scroll karta tha
+   jitna ab karta hai). Card khud ~640px ooncha hai, to 620px ki window me wo
+   waise bhi thoda scroll maangega — mascots hon ya na hon. Yaani wo purana
+   rule sirf brand ka nuksaan tha, fayda zero.
+
+   Stacked layout (<=1080px) me maamla ulta hai: wahan mascot panel card ke
+   UPAR baithkar sach me oonchai khaata hai, isliye height wali shart wahan
+   aaj bhi jaayaz hai — landscape phone (844x390, 932x430) aur chhote netbook
+   (1024x600) par card isi ki wajah se pehli screen par dikhta hai. Isliye
+   shart hatai nahi, sirf max-width:1080px ke andar baandhi gayi hai. */
+@media (max-width:560px), (max-width:1080px) and (max-height:620px){
+  .mascot-panel{ display:none; }
+  /* Panel hatte hi rows reset karna zaroori hai: `auto 1fr` me akela card
+     pehli (auto) row me chala jaata hai aur neeche wali 1fr row saari bachi
+     jagah kha jaati hai — card beech me aane ke bajay upar chipak jaata hai.
+     columns:1fr ko bhi rehne do: dono shart ab max-width:1080px ke andar hain
+     (jahan upar wala block pehle hi 1fr kar chuka hai), par kabhi wo
+     breakpoint badla to ye card ko 1.16fr wale chaude column me girne se
+     bachata hai. */
+  .login-shell{ grid-template-columns:1fr; grid-template-rows:1fr; }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .mascots,.mascot,.turn,.pupil{ animation:none!important; transition:none!important; }
+}
