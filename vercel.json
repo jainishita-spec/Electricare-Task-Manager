@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
     "api/index.js": {
-      "includeFiles": "{frontend/**,brand.json,node_modules/@fontsource/*/files/*.woff2}",
+      "includeFiles": "{frontend/**,brand.json,data/migrations/**,node_modules/@fontsource/*/files/*.woff2}",
       "maxDuration": 60
     }
   },
