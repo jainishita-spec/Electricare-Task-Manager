@@ -73,3 +73,52 @@ backend/routes/        approvals, comments, dashboard, users, week-plan, ...
 data/                  db drivers (mysql + demo) aur migrations
 frontend/              index.html (login), app.html (app), css/, js/
 ```
+
+---
+
+## Vercel par deploy
+
+Repo Vercel ke liye taiyar hai:
+
+```
+api/index.js    serverless entry — backend/server.js ka app uthata hai
+vercel.json     routing (har path -> app) + cron schedules
+```
+
+`backend/server.js` khud serverless-aware hai: `process.env.VERCEL` set hone
+par `app.listen()` skip ho jaata hai aur background schedulers start nahi hote.
+
+### Database — Vercel par nahi hota
+
+Vercel sirf code chalata hai, MySQL host nahi karta. Database bahar chahiye
+(Hostinger, PlanetScale, Railway, Aiven — kuch bhi), aur uska connection
+string `DATABASE_URL` me. `DB_KIND=demo` production me kabhi mat lagana —
+wo in-memory hai, har request par naya aur khaali.
+
+### Vercel me env vars
+
+Zaroori: `DB_KIND=mysql`, `DATABASE_URL`, `SESSION_SECRET`, `APP_URL`
+(deployed URL), `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
+
+Optional: `SMTP_*` (emails), `WAUMFY_*` (WhatsApp), `GOOGLE_CREDENTIALS_B64`
+(FMS / Google Sheets), `CRON_SECRET`.
+
+`SESSION_SECRET` JWT sign karta hai — badalne par sabke login gir jaate hain.
+
+### Cron
+
+`vercel.json` do jobs chalata hai. Vercel Cron UTC me chalta hai, isliye
+schedule UTC me likhi hai:
+
+| job | IST | UTC (vercel.json) |
+|---|---|---|
+| `/api/cron/reminders` | roz 12:00 PM | `30 6 * * *` |
+| `/api/cron/whatsapp` | Mon–Sat 9:30 AM | `0 4 * * 1-6` |
+
+Dono endpoints **fail-closed** hain: `CRON_SECRET` set na ho to 503 dete hain
+aur kuch nahi bhejte. Vercel har cron request me
+`Authorization: Bearer $CRON_SECRET` bhejta hai, isliye wo env var zaroor set
+karo — warna reminders/WhatsApp chalenge hi nahi.
+
+⚠️ Hobby plan par cron ka time approximate hota hai (aur limit 2 jobs).
+Exact time chahiye to Pro.
